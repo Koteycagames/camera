@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Камера с зумом 50×</title>
 
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <style>
     body {
@@ -21,13 +21,14 @@
       color: white;
       font-family: sans-serif;
       overflow: hidden;
+      transition: background 0.5s ease;
     }
 
     .camera-container {
       position: relative;
       width: 90vw;
       max-width: 400px;
-      aspect-ratio: 3/4;
+      aspect-ratio: 3 / 4;
       overflow: hidden;
       border-radius: 12px;
       border: 2px solid #555;
@@ -76,16 +77,22 @@
       user-select: none;
     }
 
-    #capture {
+    #capture, #planBtn {
       background: #00bcd4;
       color: white;
       border-radius: 50px;
       width: auto;
       padding: 10px 25px;
       font-size: 16px;
+      border: none;
     }
 
-    input[type=range] {
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="range"] {
       width: 70%;
       accent-color: #00bcd4;
     }
@@ -93,6 +100,62 @@
     #zoomValue {
       font-size: 18px;
       font-weight: bold;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .zuy-mode {
+      background: linear-gradient(45deg, black, darkred);
     }
   </style>
 </head>
@@ -108,8 +171,21 @@
       <button id="zoomIn">+</button>
     </div>
     <div id="zoomValue">Зум: 1.0×</div>
-    <button id="capture">Сделать фото</button>
-    <canvas id="canvas" style="display:none;"></canvas>
+    <div class="action-buttons">
+      <button id="capture">Сделать фото</button>
+      <button id="planBtn">План</button>
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
+  </div>
+
+  <!-- Modal -->
+  <div id="planModal" class="modal">
+    <div class="modal-content">
+      <div class="close-modal" id="closeModal">&times;</div>
+      <h3>Активация плана</h3>
+      <input type="text" id="activationKey" placeholder="Введите ключ">
+      <button id="activateBtn">Активировать</button>
+    </div>
   </div>
 
   <script>
@@ -120,6 +196,12 @@
     const zoomOut = document.getElementById('zoomOut');
     const canvas = document.getElementById('canvas');
     const capture = document.getElementById('capture');
+
+    const planBtn = document.getElementById('planBtn');
+    const planModal = document.getElementById('planModal');
+    const closeModal = document.getElementById('closeModal');
+    const activateBtn = document.getElementById('activateBtn');
+    const activationKey = document.getElementById('activationKey');
 
     async function initCamera() {
       try {
@@ -148,7 +230,7 @@
 
     zoomIn.addEventListener('click', () => {
       let newZoom = parseFloat(zoom.value) + 0.1;
-      if (newZoom > 50) newZoom = 50;
+      if (newZoom > parseFloat(zoom.max)) newZoom = parseFloat(zoom.max);
       zoom.value = newZoom.toFixed(1);
       updateZoom();
     });
@@ -169,6 +251,47 @@
       link.download = 'photo.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
+    });
+
+    // Модальное окно
+    planBtn.addEventListener('click', () => {
+      planModal.style.display = 'flex';
+    });
+
+    closeModal.addEventListener('click', () => {
+      planModal.style.display = 'none';
+    });
+
+    activateBtn.addEventListener('click', () => {
+      const key = activationKey.value.trim().toUpperCase();
+      if (!key) {
+        alert('Введите ключ!');
+        return;
+      }
+
+      console.log('Введён ключ:', key);
+
+      if (key === 'PRO123') {
+        alert('План PRO активирован!');
+        zoom.max = 100;
+      } else if (key === 'NEZNAYU') {
+        alert('✅ Режим "зуй" активирован!');
+        zoom.max = 800;
+        zoom.value = 800;
+        updateZoom();
+        document.body.classList.add('zuy-mode');
+      } else {
+        alert('⛔ Неверный ключ');
+      }
+
+      planModal.style.display = 'none';
+      activationKey.value = '';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === planModal) {
+        planModal.style.display = 'none';
+      }
     });
 
     if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
