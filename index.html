@@ -35,7 +35,7 @@
       object-fit: cover;
       transform: scale(var(--zoom, 1));
       transform-origin: center center;
-      transition: transform 0.15s ease;
+      transition: transform 0.1s linear;
     }
     #controls {
       display: flex;
@@ -51,9 +51,14 @@
       border-radius: 50px;
       padding: 10px 20px;
       font-size: 16px;
+      cursor: pointer;
     }
     input[type=range] {
       width: 80%;
+    }
+    #zoomValue {
+      font-size: 18px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -62,7 +67,8 @@
     <video id="camera" autoplay playsinline></video>
   </div>
   <div id="controls">
-    <input type="range" id="zoom" min="10" max="100" value="10" step="1">
+    <input type="range" id="zoom" min="1" max="10" value="1" step="1">
+    <div id="zoomValue">Зум: 1×</div>
     <button id="capture">Сделать фото</button>
     <canvas id="canvas" style="display:none;"></canvas>
   </div>
@@ -70,6 +76,7 @@
   <script>
     const video = document.getElementById('camera');
     const zoom = document.getElementById('zoom');
+    const zoomValue = document.getElementById('zoomValue');
     const canvas = document.getElementById('canvas');
     const capture = document.getElementById('capture');
 
@@ -91,8 +98,9 @@
     }
 
     zoom.addEventListener('input', () => {
-      const z = parseFloat(zoom.value) / 10;
+      const z = parseInt(zoom.value);
       video.style.setProperty('--zoom', z);
+      zoomValue.textContent = `Зум: ${z}×`;
     });
 
     capture.addEventListener('click', () => {
