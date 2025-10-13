@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Камера с зумом</title>
+
+  <!-- 🚫 Отключаем кэширование -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <style>
     body {
       margin: 0;
@@ -16,6 +22,7 @@
       color: white;
       font-family: sans-serif;
     }
+
     .camera-container {
       position: relative;
       width: 90vw;
@@ -29,6 +36,7 @@
       align-items: center;
       justify-content: center;
     }
+
     video {
       width: 100%;
       height: 100%;
@@ -37,13 +45,22 @@
       transform-origin: center center;
       transition: transform 0.1s linear;
     }
+
     #controls {
+      width: 90vw;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
       margin-top: 15px;
       gap: 10px;
     }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: #00bcd4;
+    }
+
     button {
       background: #fff;
       color: black;
@@ -53,9 +70,7 @@
       font-size: 16px;
       cursor: pointer;
     }
-    input[type=range] {
-      width: 80%;
-    }
+
     #zoomValue {
       font-size: 18px;
       font-weight: bold;
@@ -66,6 +81,7 @@
   <div class="camera-container">
     <video id="camera" autoplay playsinline></video>
   </div>
+
   <div id="controls">
     <input type="range" id="zoom" min="1" max="10" value="1" step="1">
     <div id="zoomValue">Зум: 1×</div>
@@ -79,6 +95,9 @@
     const zoomValue = document.getElementById('zoomValue');
     const canvas = document.getElementById('canvas');
     const capture = document.getElementById('capture');
+
+    // Нелинейные шаги зума (плавно и реалистично)
+    const zoomSteps = [1, 1.3, 1.6, 2, 2.5, 3.2, 4, 5, 6.5, 8];
 
     async function initCamera() {
       try {
@@ -98,9 +117,10 @@
     }
 
     zoom.addEventListener('input', () => {
-      const z = parseInt(zoom.value);
+      const index = parseInt(zoom.value) - 1; // 0–9
+      const z = zoomSteps[index];
       video.style.setProperty('--zoom', z);
-      zoomValue.textContent = `Зум: ${z}×`;
+      zoomValue.textContent = `Зум: ${z.toFixed(1)}×`;
     });
 
     capture.addEventListener('click', () => {
