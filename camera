@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Камера с зумом</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: white;
+      font-family: sans-serif;
+    }
+    .camera-container {
+      position: relative;
+      width: 90vw;
+      max-width: 400px;
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 2px solid #555;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(var(--zoom, 1));
+      transform-origin: center center;
+      transition: transform 0.15s ease;
+    }
+    #controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 15px;
+      gap: 10px;
+    }
+    button {
+      background: #fff;
+      color: black;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    input[type=range] {
+      width: 80%;
+    }
+  </style>
+</head>
+<body>
+  <div class="camera-container">
+    <video id="camera" autoplay playsinline></video>
+  </div>
+  <div id="controls">
+    <input type="range" id="zoom" min="10" max="100" value="10" step="1">
+    <button id="capture">Сделать фото</button>
+    <canvas id="canvas" style="display:none;"></canvas>
+  </div>
+
+  <script>
+    const video = document.getElementById('camera');
+    const zoom = document.getElementById('zoom');
+    const canvas = document.getElementById('canvas');
+    const capture = document.getElementById('capture');
+
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Не удалось получить доступ к камере: ' + err.message);
+        console.error('Ошибка камеры:', err);
+      }
+    }
+
+    zoom.addEventListener('input', () => {
+      const z = parseFloat(zoom.value) / 10;
+      video.style.setProperty('--zoom', z);
+    });
+
+    capture.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const link = document.createElement('a');
+      link.download = 'photo.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      alert('⚠️ Для работы камеры на телефоне страница должна быть открыта через HTTPS (https://)');
+    }
+
+    initCamera();
+  </script>
+</body>
+</html>
