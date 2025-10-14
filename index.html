@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Камера с зумом 50×</title>
+  <title>Камера с зумом</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -122,6 +122,7 @@
       width: 90%;
       max-width: 350px;
       text-align: center;
+      position: relative;
     }
 
     .modal-content input {
@@ -178,7 +179,7 @@
     <canvas id="canvas" style="display: none;"></canvas>
   </div>
 
-  <!-- Modal -->
+  <!-- Модальное окно -->
   <div id="planModal" class="modal">
     <div class="modal-content">
       <div class="close-modal" id="closeModal">&times;</div>
@@ -263,7 +264,7 @@
     });
 
     activateBtn.addEventListener('click', () => {
-      const key = activationKey.value.trim().toUpperCase();
+      const key = activationKey.value.trim().toLowerCase();
       if (!key) {
         alert('Введите ключ!');
         return;
@@ -271,18 +272,28 @@
 
       console.log('Введён ключ:', key);
 
-      if (key === 'PRO123') {
-        alert('План PRO активирован!');
+      if (key === 'def') {
+        alert('✅ План "def" активирован! (50×)');
+        zoom.max = 50;
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'min') {
+        alert('✅ План "min" активирован! (100×)');
         zoom.max = 100;
-      } else if (key === 'NEZNAYU') {
-        alert('✅ Режим "зуй" активирован!');
-        zoom.max = 800;
-        zoom.value = 800;
-        updateZoom();
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'nevrotik') {
+        alert('✅ План "nevrotik" активирован! (500×)');
+        zoom.max = 500;
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'zuy') {
+        alert('💀 Активирован ультра-план "zuy" (1000×)!');
+        zoom.max = 1000;
         document.body.classList.add('zuy-mode');
       } else {
         alert('⛔ Неверный ключ');
       }
+
+      zoom.value = 1;
+      updateZoom();
 
       planModal.style.display = 'none';
       activationKey.value = '';
