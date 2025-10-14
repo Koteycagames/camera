@@ -1,117 +1,193 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zoom Камера</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Камера с зумом</title>
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <style>
     body {
       margin: 0;
-      background: #000;
+      background: black;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
+      font-family: sans-serif;
+      overflow: hidden;
+      transition: background 0.5s ease;
     }
 
-    #camera {
+    .camera-container {
+      position: relative;
+      width: 90vw;
+      max-width: 400px;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 2px solid #555;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
       width: 100%;
-      height: auto;
-      max-height: 100vh;
-      object-fit: contain;
+      height: 100%;
+      object-fit: cover;
       transform: scale(var(--zoom, 1));
-      transition: transform 0.2s ease;
+      transform-origin: center center;
+      transition: transform 0.1s linear;
     }
 
     #controls {
-      position: fixed;
-      bottom: 10px;
-      left: 0;
-      right: 0;
+      width: 90vw;
+      max-width: 400px;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      margin-top: 15px;
       gap: 10px;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 10px;
     }
 
-    #zoom {
-      width: 200px;
-    }
-
-    #planBtn {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    #planModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
-      justify-content: center;
+    .zoom-controls {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      z-index: 100;
-    }
-
-    #planModal .content {
-      background: #111;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 300px;
-      text-align: center;
-    }
-
-    input {
-      width: 80%;
-      padding: 5px;
-      border-radius: 5px;
-      border: none;
-      margin: 10px 0;
+      width: 100%;
     }
 
     button {
-      padding: 8px 16px;
-      border-radius: 8px;
+      background: #fff;
+      color: black;
       border: none;
+      border-radius: 50%;
+      width: 45px;
+      height: 45px;
+      font-size: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #capture, #planBtn {
+      background: #00bcd4;
+      color: white;
+      border-radius: 50px;
+      width: auto;
+      padding: 10px 25px;
+      font-size: 16px;
+      border: none;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      width: 70%;
+      accent-color: #00bcd4;
+    }
+
+    #zoomValue {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      color: white;
       cursor: pointer;
     }
 
     .zuy-mode {
-      background: radial-gradient(circle, red 0%, black 100%);
+      background: linear-gradient(45deg, black, darkred);
     }
   </style>
 </head>
 <body>
-  <video id="camera" autoplay playsinline></video>
+  <div class="camera-container">
+    <video id="camera" autoplay playsinline></video>
+  </div>
 
   <div id="controls">
-    <button id="zoomOut">−</button>
-    <input type="range" id="zoom" min="1" max="1" step="0.1" value="1">
-    <button id="zoomIn">+</button>
-    <span id="zoomValue">Зум: 1×</span>
-    <button id="planBtn">Активировать план</button>
+    <div class="zoom-controls">
+      <button id="zoomOut">−</button>
+      <input type="range" id="zoom" min="1" max="50" value="1" step="0.1">
+      <button id="zoomIn">+</button>
+    </div>
+    <div id="zoomValue">Зум: 1.0×</div>
+    <div class="action-buttons">
+      <button id="capture">Сделать фото</button>
+      <button id="planBtn">План</button>
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
   </div>
 
-  <div id="planModal">
-    <div class="content">
-      <h3>Введите код активации</h3>
-      <input type="text" id="activationKey" placeholder="например: def">
-      <div>
-        <button id="activateBtn">Активировать</button>
-        <button id="closeModal">Закрыть</button>
-      </div>
+  <!-- Модальное окно -->
+  <div id="planModal" class="modal">
+    <div class="modal-content">
+      <div class="close-modal" id="closeModal">&times;</div>
+      <h3>Активация плана</h3>
+      <input type="text" id="activationKey" placeholder="Введите ключ">
+      <button id="activateBtn">Активировать</button>
     </div>
   </div>
-
-  <canvas id="canvas" style="display:none;"></canvas>
 
   <script>
     const video = document.getElementById('camera');
@@ -119,70 +195,36 @@
     const zoomValue = document.getElementById('zoomValue');
     const zoomIn = document.getElementById('zoomIn');
     const zoomOut = document.getElementById('zoomOut');
+    const canvas = document.getElementById('canvas');
+    const capture = document.getElementById('capture');
+
     const planBtn = document.getElementById('planBtn');
     const planModal = document.getElementById('planModal');
     const closeModal = document.getElementById('closeModal');
     const activateBtn = document.getElementById('activateBtn');
     const activationKey = document.getElementById('activationKey');
 
-    let stream, track;
-    let realZoomMin = 1;
-    let realZoomMax = 1;
-    let currentPlanMax = 50; // по умолчанию 50×
-
     async function initCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: { ideal: "environment" },
+            facingMode: 'environment',
             width: { ideal: 1920 },
             height: { ideal: 1080 }
-          }
+          },
+          audio: false
         });
         video.srcObject = stream;
-
-        // ждём, пока камера запустится
-        await new Promise(r => setTimeout(r, 1000));
-
-        track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities();
-        console.log('Camera capabilities:', capabilities);
-
-        if (capabilities.zoom) {
-          realZoomMin = capabilities.zoom.min || 1;
-          realZoomMax = capabilities.zoom.max || 1;
-          zoom.max = currentPlanMax;
-          console.log(`📷 Настоящий зум камеры: ${realZoomMin}–${realZoomMax}×`);
-        } else {
-          console.warn("Камера не поддерживает настоящий зум");
-          realZoomMax = 1;
-        }
-
-        updateZoom();
       } catch (err) {
-        alert('Ошибка доступа к камере: ' + err.message);
-        console.error(err);
+        alert('Не удалось получить доступ к камере: ' + err.message);
+        console.error('Ошибка камеры:', err);
       }
     }
 
     function updateZoom() {
       const z = parseFloat(zoom.value);
+      video.style.setProperty('--zoom', z);
       zoomValue.textContent = `Зум: ${z.toFixed(1)}×`;
-
-      if (track && track.getCapabilities().zoom) {
-        if (z <= realZoomMax) {
-          // используем настоящий зум телефона
-          track.applyConstraints({ advanced: [{ zoom: z }] }).catch(console.warn);
-          video.style.setProperty('--zoom', 1);
-        } else {
-          // после реального зума — искусственный
-          const digital = z / realZoomMax;
-          video.style.setProperty('--zoom', digital);
-        }
-      } else {
-        // если нет настоящего зума — только искусственный
-        video.style.setProperty('--zoom', z);
-      }
     }
 
     zoom.addEventListener('input', updateZoom);
@@ -201,7 +243,18 @@
       updateZoom();
     });
 
-    // активация планов
+    capture.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const link = document.createElement('a');
+      link.download = 'photo.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // Модальное окно
     planBtn.addEventListener('click', () => {
       planModal.style.display = 'flex';
     });
@@ -212,40 +265,52 @@
 
     activateBtn.addEventListener('click', () => {
       const key = activationKey.value.trim().toLowerCase();
-
-      if (!key) return alert('Введите ключ!');
-
-      if (key === 'def') {
-        currentPlanMax = 50;
-        alert('✅ План "def" активирован (50×)');
-        document.body.classList.remove('zuy-mode');
-      } else if (key === 'min') {
-        currentPlanMax = 100;
-        alert('✅ План "min" активирован (100×)');
-        document.body.classList.remove('zuy-mode');
-      } else if (key === 'nevrotik') {
-        currentPlanMax = 500;
-        alert('✅ План "nevrotik" активирован (500×)');
-        document.body.classList.remove('zuy-mode');
-      } else if (key === 'zuy') {
-        currentPlanMax = 1000;
-        alert('💀 Активирован ультра-план "zuy" (1000×)');
-        document.body.classList.add('zuy-mode');
-      } else {
-        return alert('⛔ Неверный ключ');
+      if (!key) {
+        alert('Введите ключ!');
+        return;
       }
 
-      zoom.max = currentPlanMax;
+      console.log('Введён ключ:', key);
+
+      if (key === 'def') {
+        alert('✅ План "def" активирован! (50×)');
+        zoom.max = 50;
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'min') {
+        alert('✅ План "min" активирован! (100×)');
+        zoom.max = 100;
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'nevrotik') {
+        alert('✅ План "nevrotik" активирован! (500×)');
+        zoom.max = 500;
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'zuy') {
+        alert('💀 Активирован ультра-план "zuy" (1000×)!');
+        zoom.max = 1000;
+        document.body.classList.add('zuy-mode');
+      } else {
+        alert('⛔ Неверный ключ');
+      }
+
       zoom.value = 1;
       updateZoom();
+
       planModal.style.display = 'none';
+      activationKey.value = '';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === planModal) {
+        planModal.style.display = 'none';
+      }
     });
 
     if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-      alert('⚠️ Для работы камеры на телефоне открой страницу через HTTPS (https://)');
+      alert('⚠️ Для работы камеры на телефоне страница должна быть открыта через HTTPS (https://)');
     }
 
     initCamera();
+    updateZoom();
   </script>
 </body>
 </html>
