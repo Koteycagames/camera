@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Камера с зумом — исправлено</title>
+  <title>Камера с зумом</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -15,7 +15,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      height: 100vh;
       color: white;
       font-family: sans-serif;
       overflow: hidden;
@@ -24,7 +24,7 @@
     .camera-container {
       position: relative;
       width: 90vw;
-      max-width: 420px;
+      max-width: 400px;
       aspect-ratio: 3 / 4;
       overflow: hidden;
       border-radius: 12px;
@@ -41,52 +41,16 @@
       object-fit: cover;
       transform: scale(var(--zoom, 1));
       transform-origin: center center;
-      transition: transform 0.08s linear;
-      background: black;
-    }
-
-    /* REC */
-    .rec-indicator {
-      position: absolute;
-      top: 10px;
-      right: 12px;
-      font-size: 14px;
-      font-weight: bold;
-      color: red;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      z-index: 5;
-      padding: 4px 8px;
-      border-radius: 6px;
-      background: rgba(0,0,0,0.45);
-    }
-
-    .rec-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: red;
-      animation: recBlink 1s infinite;
-    }
-
-    @keyframes recBlink {
-      0%, 50% { opacity: 1; transform: scale(1); }
-      51%, 100% { opacity: 0.25; transform: scale(0.9); }
-    }
-
-    .rec-time {
-      font-size: 13px;
-      color: white;
+      transition: transform 0.1s linear;
     }
 
     #controls {
       width: 90vw;
-      max-width: 420px;
+      max-width: 400px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: 12px;
+      margin-top: 15px;
       gap: 10px;
     }
 
@@ -95,170 +59,154 @@
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      gap: 8px;
     }
 
-    button.icon {
+    button {
       background: #fff;
       color: black;
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      font-size: 20px;
+      width: 45px;
+      height: 45px;
+      font-size: 22px;
       font-weight: bold;
       cursor: pointer;
       user-select: none;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
 
-    button.primary {
+    #capture, #recordBtn, #planBtn {
       background: #00bcd4;
       color: white;
       border-radius: 50px;
       width: auto;
-      padding: 10px 18px;
-      font-size: 14px;
+      padding: 10px 25px;
+      font-size: 16px;
       border: none;
-      cursor: pointer;
     }
 
     .action-buttons {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
     }
 
     input[type="range"] {
-      width: 100%;
+      width: 70%;
       accent-color: #00bcd4;
-      background: transparent;
     }
 
     #zoomValue {
-      font-size: 15px;
-      font-weight: 700;
-      margin-top: 4px;
+      font-size: 18px;
+      font-weight: bold;
     }
 
     .modal {
       display: none;
       position: fixed;
-      z-index: 10000;
-      left: 0; top: 0;
-      width: 100vw; height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
       align-items: center;
       justify-content: center;
     }
 
     .modal-content {
       background-color: #222;
-      padding: 18px;
+      padding: 20px;
       border-radius: 10px;
-      width: 94%;
-      max-width: 360px;
+      width: 90%;
+      max-width: 350px;
       text-align: center;
       position: relative;
-      color: white;
     }
 
-    .modal-content input, .modal-content select {
+    .modal-content input, select {
       width: 100%;
       padding: 10px;
-      font-size: 15px;
+      font-size: 16px;
       margin-top: 10px;
-      border-radius: 6px;
+      border-radius: 5px;
       border: none;
-      box-sizing: border-box;
     }
 
     .modal-content button {
-      margin-top: 12px;
+      margin-top: 15px;
       width: 100%;
       padding: 10px;
-      font-size: 15px;
+      font-size: 16px;
       background-color: #00bcd4;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
     }
 
     .close-modal {
       position: absolute;
-      top: 12px;
-      right: 14px;
-      font-size: 20px;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
       color: white;
       cursor: pointer;
     }
 
-    .zuy-mode { background: linear-gradient(45deg, black, darkred); }
+    .zuy-mode {
+      background: linear-gradient(45deg, black, darkred);
+    }
   </style>
 </head>
 <body>
-  <div class="camera-container" id="cameraContainer">
-    <video id="camera" autoplay playsinline muted></video>
-    <div class="rec-indicator" id="recIndicator">
-      <div class="rec-dot"></div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <div style="font-weight:700">REC</div>
-        <div class="rec-time" id="recTime">00:00</div>
-      </div>
-    </div>
+  <div class="camera-container">
+    <video id="camera" autoplay playsinline></video>
   </div>
 
   <div id="controls">
     <div class="zoom-controls">
-      <button class="icon" id="zoomOut">−</button>
+      <button id="zoomOut">−</button>
       <input type="range" id="zoom" min="1" max="50" value="1" step="0.1">
-      <button class="icon" id="zoomIn">+</button>
+      <button id="zoomIn">+</button>
     </div>
-
     <div id="zoomValue">Зум: 1.0×</div>
-
     <div class="action-buttons">
-      <button class="primary" id="settingsBtn">⚙ Настройки</button>
-      <button class="primary" id="capture">📷 Фото</button>
-      <button class="primary" id="recordBtn">⏺ Видео</button>
-      <button class="primary" id="planBtn">План</button>
+      <button id="settingsBtn">⚙</button>
+      <button id="capture">📷 Фото</button>
+      <button id="recordBtn">⏺ Видео</button>
+      <button id="planBtn">План</button>
     </div>
-
-    <canvas id="canvas" style="display:none;"></canvas>
+    <canvas id="canvas" style="display: none;"></canvas>
   </div>
 
-  <!-- План -->
+  <!-- Модальное окно плана -->
   <div id="planModal" class="modal">
     <div class="modal-content">
       <div class="close-modal" id="closePlanModal">&times;</div>
       <h3>Активация плана</h3>
-      <input id="activationKey" placeholder="Введите ключ (def|min|nevrotik|zuy)">
+      <input type="text" id="activationKey" placeholder="Введите ключ">
       <button id="activateBtn">Активировать</button>
     </div>
   </div>
 
-  <!-- Настройки -->
+  <!-- Модальное окно настроек -->
   <div id="settingsModal" class="modal">
     <div class="modal-content">
       <div class="close-modal" id="closeSettings">&times;</div>
       <h3>Настройки камеры</h3>
 
-      <label for="qualitySelect" style="display:block;text-align:left;margin-top:6px;">Качество видео:</label>
+      <label for="qualitySelect">Качество видео:</label>
       <select id="qualitySelect">
         <option value="144">144p</option>
         <option value="240">240p</option>
         <option value="480">480p</option>
         <option value="720">720p</option>
         <option value="1080" selected>1080p</option>
-        <option value="2160" data-plan="nevrotik">4K (требуется nevrotik)</option>
-        <option value="4320" data-plan="zuy">8K (требуется zuy)</option>
+        <option value="2160" data-plan="nevrotik">4K (plan: nevrotik)</option>
+        <option value="4320" data-plan="zuy">8K (plan: zuy)</option>
       </select>
 
-      <label for="fpsSelect" style="display:block;text-align:left;margin-top:8px;">FPS:</label>
+      <label for="fpsSelect">FPS (кадров в секунду):</label>
       <select id="fpsSelect"></select>
 
       <button id="applyQuality">Применить</button>
@@ -266,7 +214,6 @@
   </div>
 
   <script>
-    // Элементы
     const video = document.getElementById('camera');
     const zoom = document.getElementById('zoom');
     const zoomValue = document.getElementById('zoomValue');
@@ -289,96 +236,55 @@
     const fpsSelect = document.getElementById('fpsSelect');
     const applyQuality = document.getElementById('applyQuality');
 
-    const recIndicator = document.getElementById('recIndicator');
-    const recTimeEl = document.getElementById('recTime');
-
-    // Состояние
-    let currentPlan = 'def';
+    let currentPlan = "def";
     let currentStream = null;
     let currentQuality = 1080;
     let currentFPS = 60;
     let mediaRecorder = null;
     let chunks = [];
     let recording = false;
-    let recTimer = null;
-    let recSeconds = 0;
 
-    // Проверка HTTPS (камера не работает на plain http)
-    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-      console.warn('Страница не в HTTPS — доступ к камере может быть запрещён браузером.');
-      // показываем предупреждение пользователю (не блокируем)
-      alert('⚠️ Внимание: для корректной работы камеры страница должна быть открыта через HTTPS или localhost.');
-    }
-
-    // ------ FPS options в зависимости от плана ------
+    // ---------- FPS по планам ----------
     function updateFpsOptions() {
-      fpsSelect.innerHTML = '';
+      fpsSelect.innerHTML = "";
       let maxFps = 60;
-      if (currentPlan === 'min') maxFps = 120;
-      else if (currentPlan === 'nevrotik') maxFps = 240;
-      else if (currentPlan === 'zuy') maxFps = 480;
+      if (currentPlan === "min") maxFps = 120;
+      else if (currentPlan === "nevrotik") maxFps = 240;
+      else if (currentPlan === "zuy") maxFps = 480;
 
-      const candidates = [30, 60, 120, 240, 480];
-      candidates.filter(v => v <= maxFps).forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v + ' FPS';
-        if (v === currentFPS) opt.selected = true;
+      const fpsValues = [30, 60, 120, 240, 480].filter(v => v <= maxFps);
+      fpsValues.forEach(fps => {
+        const opt = document.createElement("option");
+        opt.value = fps;
+        opt.textContent = fps + " FPS";
+        if (fps === currentFPS) opt.selected = true;
         fpsSelect.appendChild(opt);
       });
-
-      // если текущий FPS > max, понизим
-      if (currentFPS > maxFps) {
-        currentFPS = maxFps;
-      }
     }
 
-    // ------ Инициализация камеры ------
+    // ---------- Инициализация камеры ----------
     async function initCamera(resolution = 1080, fps = 60) {
       try {
-        // останов предыдущего потока
         if (currentStream) {
-          currentStream.getTracks().forEach(t => t.stop());
+          currentStream.getTracks().forEach(track => track.stop());
         }
-
-        // вычисляем желаемые width/height
-        const idealHeight = parseInt(resolution, 10) || 1080;
-        const idealWidth = Math.round(idealHeight * 16 / 9);
-
-        const constraints = {
-          audio: true,
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: 'environment',
-            width: { ideal: idealWidth },
-            height: { ideal: idealHeight },
+            width: { ideal: resolution * 16 / 9 },
+            height: { ideal: resolution },
             frameRate: { ideal: fps }
-          }
-        };
-
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        currentStream = stream;
+          },
+          audio: true
+        });
         video.srcObject = stream;
-
-        // иногда нужно явно попросить play()
-        try { await video.play(); } catch (e) { console.warn('video.play() failed:', e); }
-
-        // если поток имеет реальные параметры, можно их прочесть (для отладки)
-        const track = stream.getVideoTracks()[0];
-        const settings = track.getSettings ? track.getSettings() : {};
-        console.log('Camera stream settings:', settings);
-
+        currentStream = stream;
       } catch (err) {
-        console.error('initCamera error:', err);
-        // более информативное сообщение
-        if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
-          alert('Отказано в доступе к камере/микрофону. Разрешите доступ в настройках браузера.');
-        } else {
-          alert('Не удалось запустить камеру: ' + (err.message || err.name));
-        }
+        alert('Не удалось получить доступ к камере: ' + err.message);
+        console.error('Ошибка камеры:', err);
       }
     }
 
-    // ------ Зум ------
     function updateZoom() {
       const z = parseFloat(zoom.value);
       video.style.setProperty('--zoom', z);
@@ -387,149 +293,97 @@
 
     zoom.addEventListener('input', updateZoom);
     zoomIn.addEventListener('click', () => {
-      let newZ = Math.min(parseFloat(zoom.max), parseFloat(zoom.value) + 0.1);
-      zoom.value = newZ.toFixed(1);
+      let newZoom = parseFloat(zoom.value) + 0.1;
+      if (newZoom > parseFloat(zoom.max)) newZoom = parseFloat(zoom.max);
+      zoom.value = newZoom.toFixed(1);
       updateZoom();
     });
     zoomOut.addEventListener('click', () => {
-      let newZ = Math.max(1, parseFloat(zoom.value) - 0.1);
-      zoom.value = newZ.toFixed(1);
+      let newZoom = parseFloat(zoom.value) - 0.1;
+      if (newZoom < 1) newZoom = 1;
+      zoom.value = newZoom.toFixed(1);
       updateZoom();
     });
 
-    // ------ Фото ------
+    // ---------- Фото ----------
     capture.addEventListener('click', () => {
-      if (!currentStream) return alert('Камера не запущена.');
-      const vw = video.videoWidth || (currentQuality * 16 / 9);
-      const vh = video.videoHeight || currentQuality;
-      canvas.width = vw;
-      canvas.height = vh;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
-
-      // если применён зум через css, нужно рисовать с учётом трансформации:
-      // простая реализация: drawImage(video, 0,0,w,h) — это снимок того, что показывает видео элемент.
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const link = document.createElement('a');
-      link.download = `photo_${vw}x${vh}.png`;
+      link.download = 'photo.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
 
-    // ------ Запись видео (MediaRecorder) ------
-    function getSupportedMime() {
-      const types = [
-        'video/webm;codecs=vp9',
-        'video/webm;codecs=vp8',
-        'video/webm',
-        'video/mp4' // редко поддерживается by MediaRecorder
-      ];
-      for (const t of types) {
-        try {
-          if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) return t;
-        } catch (e) { /* ignore */ }
-      }
-      return '';
-    }
-
-    function startRecTimer() {
-      recSeconds = 0;
-      recTimeEl.textContent = '00:00';
-      recTimer = setInterval(() => {
-        recSeconds++;
-        const mm = String(Math.floor(recSeconds / 60)).padStart(2,'0');
-        const ss = String(recSeconds % 60).padStart(2,'0');
-        recTimeEl.textContent = `${mm}:${ss}`;
-      }, 1000);
-    }
-    function stopRecTimer() {
-      clearInterval(recTimer);
-      recTimer = null;
-      recTimeEl.textContent = '00:00';
-    }
-
+    // ---------- Видео ----------
     recordBtn.addEventListener('click', () => {
-      if (!currentStream) return alert('Камера не запущена.');
-
       if (!recording) {
-        chunks = [];
-        const mime = getSupportedMime() || undefined;
-        try {
-          mediaRecorder = mime ? new MediaRecorder(currentStream, { mimeType: mime }) : new MediaRecorder(currentStream);
-        } catch (e) {
-          console.error('MediaRecorder ctor failed:', e);
-          alert('Запись недоступна в этом браузере (MediaRecorder).');
-          return;
-        }
+        if (!currentStream) return alert("Камера не запущена!");
 
-        mediaRecorder.ondataavailable = (ev) => {
-          if (ev.data && ev.data.size) chunks.push(ev.data);
-        };
+        chunks = [];
+        mediaRecorder = new MediaRecorder(currentStream, { mimeType: "video/webm;codecs=vp9" });
+
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = () => {
-          const blob = new Blob(chunks, { type: chunks[0]?.type || 'video/webm' });
+          const blob = new Blob(chunks, { type: "video/webm" });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `video_${currentFPS}fps_${currentQuality}p.webm`;
+          a.download = `video_${currentFPS}fps.webm`;
           a.click();
-          setTimeout(() => URL.revokeObjectURL(url), 2000);
+          URL.revokeObjectURL(url);
         };
 
         mediaRecorder.start();
         recording = true;
-        recordBtn.textContent = '⏹ Стоп';
-        recordBtn.style.background = '#e53935';
-        recIndicator.style.display = 'flex';
-        startRecTimer();
+        recordBtn.textContent = "⏹ Стоп";
+        recordBtn.style.background = "#e53935";
       } else {
         mediaRecorder.stop();
         recording = false;
-        recordBtn.textContent = '⏺ Видео';
-        recordBtn.style.background = '#00bcd4';
-        recIndicator.style.display = 'none';
-        stopRecTimer();
+        recordBtn.textContent = "⏺ Видео";
+        recordBtn.style.background = "#00bcd4";
       }
     });
 
-    // ------ Планы ------
+    // ---------- Планы ----------
     planBtn.addEventListener('click', () => planModal.style.display = 'flex');
     closePlanModal.addEventListener('click', () => planModal.style.display = 'none');
 
     activateBtn.addEventListener('click', () => {
       const key = activationKey.value.trim().toLowerCase();
-      if (!key) return alert('Введите ключ (def|min|nevrotik|zuy)');
+      if (!key) return alert('Введите ключ!');
+
       if (key === 'def') {
         currentPlan = 'def'; zoom.max = 50;
-        alert('План def активирован (50× max).');
+        alert('✅ План "def" активирован! (50×)');
         document.body.classList.remove('zuy-mode');
       } else if (key === 'min') {
         currentPlan = 'min'; zoom.max = 100;
-        alert('План min активирован (100× max).');
+        alert('✅ План "min" активирован! (100×)');
         document.body.classList.remove('zuy-mode');
       } else if (key === 'nevrotik') {
         currentPlan = 'nevrotik'; zoom.max = 500;
-        alert('План nevrotik активирован (500× max).');
+        alert('✅ План "nevrotik" активирован! (500×)');
         document.body.classList.remove('zuy-mode');
       } else if (key === 'zuy') {
         currentPlan = 'zuy'; zoom.max = 1000;
-        alert('План zuy активирован (1000× max).');
+        alert('💀 Активирован ультра-план "zuy" (1000×)!');
         document.body.classList.add('zuy-mode');
       } else {
-        alert('Неверный ключ.');
-        return;
+        return alert('⛔ Неверный ключ');
       }
+
       zoom.value = 1;
       updateZoom();
       planModal.style.display = 'none';
       activationKey.value = '';
-      updateFpsAfterPlan();
+      updateFpsOptions();
     });
 
-    function updateFpsAfterPlan() {
-      // установить текущие опции FPS и, если нужно, понизить текущий fps
-      updateFpsOptions();
-    }
-
-    // ------ Настройки ------
+    // ---------- Настройки ----------
     settingsBtn.addEventListener('click', () => {
       updateFpsOptions();
       settingsModal.style.display = 'flex';
@@ -537,17 +391,19 @@
     closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
 
     applyQuality.addEventListener('click', async () => {
-      const val = parseInt(qualitySelect.value, 10);
+      const val = parseInt(qualitySelect.value);
       const option = qualitySelect.selectedOptions[0];
-      const requiredPlan = option?.dataset?.plan;
+      const requiredPlan = option.dataset.plan;
+
       if (requiredPlan && requiredPlan !== currentPlan) {
-        alert(`Для этого качества требуется план "${requiredPlan}"`);
+        alert(`⛔ Для этого качества требуется план "${requiredPlan}"`);
         return;
       }
+
       currentQuality = val;
-      currentFPS = parseInt(fpsSelect.value, 10) || currentFPS;
-      alert(`Применено: ${currentQuality}p, ${currentFPS} FPS`);
-      await initCamera(currentQuality, currentFPS);
+      currentFPS = parseInt(fpsSelect.value);
+      alert(`🔧 Качество: ${val}p | FPS: ${currentFPS}`);
+      await initCamera(val, currentFPS);
       settingsModal.style.display = 'none';
     });
 
@@ -556,43 +412,13 @@
       if (e.target === settingsModal) settingsModal.style.display = 'none';
     });
 
-    function updateFpsOptions() {
-      fpsSelect.innerHTML = '';
-      let maxFps = 60;
-      if (currentPlan === 'min') maxFps = 120;
-      else if (currentPlan === 'nevrotik') maxFps = 240;
-      else if (currentPlan === 'zuy') maxFps = 480;
-
-      const candidates = [30, 60, 120, 240, 480];
-      candidates.filter(v => v <= maxFps).forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v + ' FPS';
-        if (v === currentFPS) opt.selected = true;
-        fpsSelect.appendChild(opt);
-      });
-
-      if (currentFPS > maxFps) {
-        currentFPS = maxFps;
-      }
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+      alert('⚠️ Для работы камеры страница должна быть открыта через HTTPS (https://)');
     }
 
-    // стартовые значения и запуск камеры
-    (async function start() {
-      updateFpsOptions();
-      try {
-        await initCamera(currentQuality, currentFPS);
-        updateZoom();
-      } catch (e) {
-        console.error('start error', e);
-      }
-    })();
-
-    // На случай, если поток "чёрный" — показываем диагностическое сообщение
-    // (пользователь может видеть ошибки в консоли)
-    video.addEventListener('error', (ev) => {
-      console.error('Video element error:', ev);
-    });
+    initCamera();
+    updateZoom();
+    updateFpsOptions();
   </script>
 </body>
 </html>
