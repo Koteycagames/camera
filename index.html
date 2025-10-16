@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Камера с зумом и записью</title>
+  <title>Камера с зумом</title>
 
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
@@ -13,12 +13,12 @@
     body {
       margin: 0;
       background: black;
-      color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      color: white;
       font-family: sans-serif;
       overflow: hidden;
     }
@@ -74,15 +74,9 @@
       font-weight: bold;
       cursor: pointer;
       user-select: none;
-      transition: background 0.2s;
     }
 
-    button:hover {
-      background: #00bcd4;
-      color: white;
-    }
-
-    #capture, #recordBtn {
+    #capture, #planBtn {
       background: #00bcd4;
       color: white;
       border-radius: 50px;
@@ -108,15 +102,61 @@
       font-weight: bold;
     }
 
-    .recording {
-      background: red !important;
-      animation: pulse 1s infinite;
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      align-items: center;
+      justify-content: center;
     }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(255,0,0,0); }
-      100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); }
+    .modal-content {
+      background-color: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 350px;
+      text-align: center;
+      position: relative;
+    }
+
+    .modal-content input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #00bcd4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .zuy-mode {
+      background: linear-gradient(45deg, black, darkred);
     }
   </style>
 </head>
@@ -133,10 +173,40 @@
     </div>
     <div id="zoomValue">Зум: 1.0×</div>
     <div class="action-buttons">
-      <button id="capture">📸 Фото</button>
-      <button id="recordBtn">⏺ Начать запись</button>
+      <button id="settingsBtn">⚙</button>
+      <button id="capture">Сделать фото</button>
+      <button id="planBtn">План</button>
     </div>
     <canvas id="canvas" style="display: none;"></canvas>
+  </div>
+
+  <!-- Модальное окно плана -->
+  <div id="planModal" class="modal">
+    <div class="modal-content">
+      <div class="close-modal" id="closePlanModal">&times;</div>
+      <h3>Активация плана</h3>
+      <input type="text" id="activationKey" placeholder="Введите ключ">
+      <button id="activateBtn">Активировать</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно настроек -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="close-modal" id="closeSettings">&times;</div>
+      <h3>Настройки камеры</h3>
+      <label for="qualitySelect">Качество видео:</label>
+      <select id="qualitySelect">
+        <option value="144">144p</option>
+        <option value="240">240p</option>
+        <option value="480">480p</option>
+        <option value="720">720p</option>
+        <option value="1080" selected>1080p</option>
+        <option value="2160" data-plan="nevrotik">4K (требуется plan: nevrotik)</option>
+        <option value="4320" data-plan="zuy">8K (требуется plan: zuy)</option>
+      </select>
+      <button id="applyQuality">Применить</button>
+    </div>
   </div>
 
   <script>
@@ -147,20 +217,35 @@
     const zoomOut = document.getElementById('zoomOut');
     const canvas = document.getElementById('canvas');
     const capture = document.getElementById('capture');
-    const recordBtn = document.getElementById('recordBtn');
 
+    const planBtn = document.getElementById('planBtn');
+    const planModal = document.getElementById('planModal');
+    const closePlanModal = document.getElementById('closePlanModal');
+    const activateBtn = document.getElementById('activateBtn');
+    const activationKey = document.getElementById('activationKey');
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettings = document.getElementById('closeSettings');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const applyQuality = document.getElementById('applyQuality');
+
+    let currentPlan = "def";
     let currentStream = null;
-    let mediaRecorder = null;
-    let recordedChunks = [];
+    let currentQuality = 1080;
 
-    async function initCamera() {
+    async function initCamera(resolution = 1080) {
       try {
         if (currentStream) {
           currentStream.getTracks().forEach(track => track.stop());
         }
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' },
-          audio: true
+          video: {
+            facingMode: 'environment',
+            width: { ideal: resolution * 16 / 9 },
+            height: { ideal: resolution }
+          },
+          audio: false
         });
         video.srcObject = stream;
         currentStream = stream;
@@ -201,51 +286,64 @@
       link.click();
     });
 
-    recordBtn.addEventListener('click', () => {
-      if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-        startRecording();
+    // Планы
+    planBtn.addEventListener('click', () => planModal.style.display = 'flex');
+    closePlanModal.addEventListener('click', () => planModal.style.display = 'none');
+
+    activateBtn.addEventListener('click', () => {
+      const key = activationKey.value.trim().toLowerCase();
+      if (!key) return alert('Введите ключ!');
+
+      if (key === 'def') {
+        currentPlan = 'def'; zoom.max = 50;
+        alert('✅ План "def" активирован! (50×)');
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'min') {
+        currentPlan = 'min'; zoom.max = 100;
+        alert('✅ План "min" активирован! (100×)');
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'nevrotik') {
+        currentPlan = 'nevrotik'; zoom.max = 500;
+        alert('✅ План "nevrotik" активирован! (500×)');
+        document.body.classList.remove('zuy-mode');
+      } else if (key === 'zuy') {
+        currentPlan = 'zuy'; zoom.max = 1000;
+        alert('💀 Активирован ультра-план "zuy" (1000×)!');
+        document.body.classList.add('zuy-mode');
       } else {
-        stopRecording();
+        return alert('⛔ Неверный ключ');
       }
+
+      zoom.value = 1;
+      updateZoom();
+      planModal.style.display = 'none';
+      activationKey.value = '';
     });
 
-    function startRecording() {
-      if (!currentStream) {
-        alert('Камера не активна!');
+    // Настройки
+    settingsBtn.addEventListener('click', () => settingsModal.style.display = 'flex');
+    closeSettings.addEventListener('click', () => settingsModal.style.display = 'none');
+
+    applyQuality.addEventListener('click', async () => {
+      const val = parseInt(qualitySelect.value);
+      const option = qualitySelect.selectedOptions[0];
+      const requiredPlan = option.dataset.plan;
+
+      if (requiredPlan && requiredPlan !== currentPlan) {
+        alert(`⛔ Для этого качества требуется план "${requiredPlan}"`);
         return;
       }
-      recordedChunks = [];
-      mediaRecorder = new MediaRecorder(currentStream);
-      mediaRecorder.ondataavailable = e => {
-        if (e.data.size > 0) recordedChunks.push(e.data);
-      };
-      mediaRecorder.onstop = saveRecording;
-      mediaRecorder.start();
-      recordBtn.textContent = '⏹ Остановить запись';
-      recordBtn.classList.add('recording');
-    }
 
-    function stopRecording() {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        recordBtn.textContent = '⏺ Начать запись';
-        recordBtn.classList.remove('recording');
-      }
-    }
+      currentQuality = val;
+      alert(`🔧 Качество установлено: ${val}p`);
+      await initCamera(val);
+      settingsModal.style.display = 'none';
+    });
 
-    function saveRecording() {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'video.webm';
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-    }
+    window.addEventListener('click', (e) => {
+      if (e.target === planModal) planModal.style.display = 'none';
+      if (e.target === settingsModal) settingsModal.style.display = 'none';
+    });
 
     if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
       alert('⚠️ Для работы камеры страница должна быть открыта через HTTPS (https://)');
